@@ -1,0 +1,31 @@
+name: Deploy aakshranjan.com
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  Init-Env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+  Build-React-App:
+    needs: Init-Env
+    uses: aakshranjan/github-workflows/.github/workflows/Build-React-App.yml@master
+    with:
+      Artifactory_Name: 'built_aakshranjan.com'
+      Artifactory_Path: 'build'
+
+  S3-Deploy:
+    needs: Build-React-App
+    uses: aakshranjan/github-workflows/.github/workflows/S3-Deploy.yml@master
+    with:
+      AWS_S3_BUCKET: aakshranjan.com
+      Artifactory_Name: 'built_aakshranjan.com'
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
